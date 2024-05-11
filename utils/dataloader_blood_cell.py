@@ -14,7 +14,7 @@ from torchvision.transforms import RandomHorizontalFlip
 
 
 class GraphDataset(Dataset):
-    def __init__(self, data_type="train", fold_idx=0, data_path="blood-cells", data_size=1.0):
+    def __init__(self, data_type="train", fold_idx=0, data_path="blood-cells"):
         cases = []
         labels = []
         if data_type == "train":
@@ -38,10 +38,6 @@ class GraphDataset(Dataset):
 
         random.shuffle(cases)
         
-        if data_type == "train":
-            assert ((data_size > 0) and (data_size <= 1.0))
-            cases = cases[:int(len(cases) * data_size)]
-        
         self.cases = cases
 
     def __len__(self):
@@ -58,6 +54,7 @@ class GraphDataset(Dataset):
         
         label_path = str(self.cases[idx].split("/")[5])
         # NEUTROPHIL 0 MONOCYTE 1 EOSINOPHIL 2 LYMPHOCYTE 3
+        label = -1
         if label_path == "NEUTROPHIL":
             label = 0
         elif label_path == "MONOCYTE":
@@ -73,7 +70,7 @@ class GraphDataset(Dataset):
 
 def BloodDataloader(cfg):
     train_set = DataLoader(
-        GraphDataset(data_type="train", fold_idx=cfg.fold, data_path=cfg.data_path, data_size=cfg.data_size),
+        GraphDataset(data_type="train", fold_idx=cfg.fold, data_path=cfg.data_path),
         batch_size=cfg.bs,
         shuffle=True,
         num_workers=cfg.num_workers,

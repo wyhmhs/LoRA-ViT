@@ -20,6 +20,7 @@ from utils.dataloader_oai import kneeDataloader
 from utils.dataloader_nih import nihDataloader,disease
 from utils.dataloader_cxp import cxpDataloader,cxpFinding
 from utils.dataloader_mimic import mimicDataloader
+from utils.dataloader_blood_cell import BloodDataloader
 from utils.result import ResultCLS, ResultMLS
 from utils.utils import init, save
 
@@ -99,10 +100,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-bs", type=int, default=128)
     parser.add_argument("-fold", type=int, default=0)
-    parser.add_argument("-data_path",type=str, default='/public_bme/data/')
+    parser.add_argument("-data_path",type=str, default='/content/LoRA-ViT/data')
     # parser.add_argument("-data_path",type=str, default='../data/NIH_X-ray/')
-    parser.add_argument("-data_info",type=str,default='nih_split_712.json')
-    parser.add_argument("-annotation",type=str,default='Data_Entry_2017_jpg.csv')
+    # parser.add_argument("-data_info",type=str,default='nih_split_712.json')
+    # parser.add_argument("-annotation",type=str,default='Data_Entry_2017_jpg.csv')
     parser.add_argument("-lr", type=float, default=1e-3)
     parser.add_argument("-epochs", type=int, default=20)
     parser.add_argument("-num_workers", type=int, default=4)
@@ -127,16 +128,20 @@ if __name__ == "__main__":
     else:
         # model = timm.create_model(weightInfo[cfg.backbone], pretrained=True)
         model = ViT('B_16_imagenet1k')
-        model.load_state_dict(torch.load('../preTrain/B_16_imagenet1k.pth'))
+        # model.load_state_dict(torch.load('../preTrain/B_16_imagenet1k.pth'))
+
+        # from pytorch_pretrained_vit import ViT
+        # model = ViT('B_16_imagenet1k', pretrained=True)
+
     
     if cfg.train_type == "lora":
         # lora_model = LoRA_ViT_timm(model, r=cfg.rank, num_classes=cfg.num_classes)
         lora_model = LoRA_ViT(model, r=cfg.rank, alpha=cfg.alpha, num_classes=cfg.num_classes)
-        weight=torch.load('./results/cxp_2.pt')
-        extractBackbone(weight,'module')
-        lora_model.load_state_dict(weight)
-        num_params = sum(p.numel() for p in lora_model.parameters() if p.requires_grad)
-        logging.info(f"trainable parameters: {num_params/2**20:.4f}M")
+        # weight=torch.load('./results/cxp_2.pt')
+        # extractBackbone(weight,'module')
+        # lora_model.load_state_dict(weight)
+        # num_params = sum(p.numel() for p in lora_model.parameters() if p.requires_grad)
+        # logging.info(f"trainable parameters: {num_params/2**20:.4f}M")
         net = lora_model.to(device)
     elif cfg.train_type=='adapter':
         adapter_model = Adapter_ViT(model, num_classes=cfg.num_classes)
@@ -164,8 +169,8 @@ if __name__ == "__main__":
     # trainset, testset = kneeDataloader(cfg)
     # loss_func = nn.CrossEntropyLoss(label_smoothing=0.1).to(device)
     # trainset,valset, testset=nihDataloader(cfg)
-    trainset,valset, testset=cxpDataloader(cfg)
-    valset,testset=mimicDataloader(cfg)
+    # trainset,valset, testset=cxpDataloader(cfg)
+    trainset, valset, testset = BloodDataloader(cfg)
     loss_func = nn.BCEWithLogitsLoss().to(device)
     optimizer = optim.Adam(net.parameters(), lr=cfg.lr)
     scheduler = CosineAnnealingLR(optimizer, cfg.epochs, 1e-6)
