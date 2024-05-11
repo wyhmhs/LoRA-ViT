@@ -40,9 +40,6 @@ weightInfo={
             "giant_clip":"vit_giant_patch14_clip_224.laion2b",
             "giga_clip":"vit_gigantic_patch14_clip_224.laion2b"
             }
-    
-    
-
 
 def train(epoch,trainset):
     running_loss = 0.0
@@ -81,16 +78,16 @@ def eval(epoch,testset,datatype='val'):
 if __name__ == "__main__":
     scaler = GradScaler()
     parser = argparse.ArgumentParser()
-    parser.add_argument("-bs", type=int, default=16)
+    parser.add_argument("-bs", type=int, default=16) #16 by default
     parser.add_argument("-fold", type=int, default=0)
-    parser.add_argument("-data_path",type=str, default='../data/NIH_X-ray/')
-    parser.add_argument("-data_info",type=str,default='nih_split_712.json')
-    parser.add_argument("-annotation",type=str,default='Data_Entry_2017_jpg.csv')
+    parser.add_argument("-data_path",type=str, default='/content/LoRA-ViT/data')
+    # parser.add_argument("-data_info",type=str,default='nih_split_712.json')
+    # parser.add_argument("-annotation",type=str,default='Data_Entry_2017_jpg.csv')
     parser.add_argument("-lr", type=float, default=1e-3)
     parser.add_argument("-epochs", type=int, default=20)
     parser.add_argument("-num_workers", type=int, default=4)
-    parser.add_argument("-num_classes", "-nc", type=int, default=14)
-    parser.add_argument("-train_type", "-tt", type=str, default="linear", help="lora, full, linear, adapter")
+    parser.add_argument("-num_classes", "-nc", type=int, default=4)
+    parser.add_argument("-train_type", "-tt", type=str, default="lora", help="lora, full, linear, adapter")
     parser.add_argument("-rank", "-r", type=int, default=4)
     parser.add_argument("-alpha", "-a", type=int, default=4)
     parser.add_argument("-vit", type=str, default="base")
@@ -169,13 +166,13 @@ if __name__ == "__main__":
     else:
         print("Wrong training type")
         exit()
-    net = torch.nn.DataParallel(net)
-    if cfg.data_path == "OAI-train":
-        trainset, valset, testset = kneeDataloader(cfg)
-    elif cfg.data_path == "ChinaSet_AllFiles":
-        trainset, valset, testset = cxrDataloader(cfg)
-    elif cfg.data_path == "blood-cells":
-        trainset, valset, testset = BloodDataloader(cfg)
+    # net = torch.nn.DataParallel(net)
+    # if cfg.data_path == "OAI-train":
+    #     trainset, valset, testset = kneeDataloader(cfg)
+    # elif cfg.data_path == "ChinaSet_AllFiles":
+    #     trainset, valset, testset = cxrDataloader(cfg)
+    # elif cfg.data_path == "blood-cells":
+    trainset, valset, testset = BloodDataloader(cfg)
     loss_func = nn.CrossEntropyLoss(label_smoothing=0.1).to(device)
     # trainset,valset, testset=nihDataloader(cfg)
     # loss_func = nn.BCEWithLogitsLoss().to(device)

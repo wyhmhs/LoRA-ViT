@@ -52,9 +52,11 @@ class GraphDataset(Dataset):
         image = resize(image)
         image = normalize(image)
         
-        label_path = str(self.cases[idx].split("/")[5])
+        label_path = str(self.cases[idx].split("/")[8])
+        # print(self.cases[idx])
+        # print(label_path)
         # NEUTROPHIL 0 MONOCYTE 1 EOSINOPHIL 2 LYMPHOCYTE 3
-        label = -1
+        # label = 0
         if label_path == "NEUTROPHIL":
             label = 0
         elif label_path == "MONOCYTE":
@@ -63,6 +65,8 @@ class GraphDataset(Dataset):
             label = 2
         elif label_path == "LYMPHOCYTE":
             label = 3
+        else:
+            raise ValueError(f"Unrecognized label_path: {label_path}")
         label = np.array(label)
         label = torch.tensor(label, dtype=torch.long)
         return image, label
